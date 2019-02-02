@@ -190,7 +190,7 @@ if __name__ == '__main__':
     # Change these variables depending upon your settings
     data_dir = './data/original_brats17/'  # evaluate on original data and not the processed one
     val_file = 'val.txt'
-    best_model_loc = './pretrained/espnet_3d_brats.pth'
+    best_model_loc = './results/sep/199_epoch_model.pth'
 
     if not os.path.isfile(data_dir + os.sep + val_file):
         print('Validation file not found')

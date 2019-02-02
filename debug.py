@@ -159,10 +159,27 @@ while line:
 	# use realine() to read next line
 	line = f.readline()
 f.close()
-print(test37_file_names)
-print(train106_im_name_list)
+#print(test37_file_names)
+#print(train106_im_name_list)
 
 full_image_names_list_path = '/home/donghao/Desktop/donghao/brain_segmentation/brain_data_full/HGG'
 # Open the file with read only permit
-test210_file_names = os.listdir(full_image_names_list_path)
-print(test210_file_names)
+full_image_names_list = os.listdir(full_image_names_list_path)
+train106_image_names_list_update = []
+print('The legnth of all images before ', len(full_image_names_list))
+
+for imname in train106_im_name_list:
+	#print(os.path.basename(imname))
+	#print('imname is ', imname)
+	#print(train106_image_names_list_update)
+	train106_image_names_list_update.append(os.path.basename(imname))
+	full_image_names_list.remove(os.path.basename(imname))
+print('The length of all images after removing training set is :', len(full_image_names_list))
+
+for imname in test37_file_names:
+	full_image_names_list.remove(imname)
+print()
+# for imname in test37_file_names:
+# 	full_image_names_list.remove(imname)
+# print('The length of full_image_names_list is ', len(full_image_names_list))
+

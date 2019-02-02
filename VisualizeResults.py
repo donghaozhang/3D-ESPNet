@@ -131,20 +131,20 @@ def segmentVoxel(imgLoc, model):
     img1 = nib.load(imgLoc)
     img1_new = nib.Nifti1Image(output_numpy, img1.affine, img1.header)
     name = imgLoc.replace('_flair', '').split('/')[-1]
-    out_dir = './predictions'
+    out_dir = './predictions_best_new'
     if not os.path.isdir(out_dir):
         os.mkdir(out_dir)
     file_name = out_dir + os.sep + name
     nib.save(img1_new, file_name)
 
 if __name__ == '__main__':
-    data_dir = './data/test/' # evaluate on original data and not the processed one
-    test_file = 'test.txt'
+    data_dir = './data/original_brats17/' # evaluate on original data and not the processed one
+    test_file = 'val.txt'
     if not os.path.isfile(data_dir + os.sep + test_file):
         print('Validation file not found')
         exit(-1)
 
-    best_model_loc = './pretrained/espnet_3d_brats.pth'
+    best_model_loc = './results/sepv2/best_model.pth'
     if not os.path.isfile(best_model_loc):
         print('Pretrained weight file does not exist. Please check')
         exit(-1)
