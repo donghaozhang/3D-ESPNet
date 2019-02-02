@@ -298,7 +298,7 @@ def trainValidateSegmentation(args):
         if mIOU_val >= best_val_acc:
             best_val_acc = mIOU_val 
             torch.save(model.state_dict(), args.savedir + '/best_model.pth')
-
+        torch.save(model.state_dict(), args.savedir + '/' + str(epoch) + '_epoch_model.pth')
         with open(args.savedir + 'acc_' + str(epoch) + '.txt', 'w') as log:
             log.write(
                 "\nEpoch: %d\t Overall Acc (Tr): %.4f\t Overall Acc (Val): %.4f\t mIOU (Tr): %.4f\t mIOU (Val): %.4f" % (
@@ -330,12 +330,12 @@ if __name__ == '__main__':
     parser.add_argument('--inHeight', type=int, default=128, help='Volume height')
     parser.add_argument('--inDepth', type=int, default=128, help='Volume depth or channels')
     parser.add_argument('--scaleIn', type=int, default=1, help='Scale the segmentation mask. Not supported')
-    parser.add_argument('--max_epochs', type=int, default=500, help='Max. epochs')
+    parser.add_argument('--max_epochs', type=int, default=1, help='Max. epochs')
     parser.add_argument('--num_workers', type=int, default=1, help='Number of workers to load the data')
     parser.add_argument('--batch_size', type=int, default=4, help='Batch size')
     parser.add_argument('--step_loss', type=int, default=100, help='reduce the learning rate by these many epochs')
     parser.add_argument('--lr', type=float, default=5e-4, help='learning rate')
-    parser.add_argument('--savedir', default='./results', help='Location to save the logs/models/etc.')
+    parser.add_argument('--savedir', default='./results/dummy', help='Location to save the logs/models/etc.')
     parser.add_argument('--visualizeNet', type=bool, default=False, help='Visualize the network')
     parser.add_argument('--resume', type=bool, default=False, help='Resume the training from saved checkpoint')  # Use this flag to load the last checkpoint for training
     parser.add_argument('--resumeLoc', default='./results/checkpoint.pth.tar', help='Location to resume from')
@@ -354,5 +354,5 @@ if __name__ == '__main__':
 
     #set the seed to 0
     torch.cuda.manual_seed_all(0)
-
+    print('The main script is being called')
     trainValidateSegmentation(args)

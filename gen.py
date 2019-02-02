@@ -10,7 +10,7 @@ import glob
 import os
 
 folders = ['HGG', 'LGG']
-writeText = open('train.txt', 'w')
+writeText = open('val.txt', 'w')
 for folder in folders:
     sub_folders = glob.glob(folder + os.sep + '*')
     for sub_folder in sub_folders:

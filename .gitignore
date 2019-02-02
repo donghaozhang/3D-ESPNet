@@ -1,0 +1,9 @@
+data/*
+__pycache__/*
+.idea/*
+brats.p
+results/*
+predictions/*
+predictions_349/*
+predictions_v2/*
+predictions_best_new/*

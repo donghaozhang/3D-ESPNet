@@ -103,7 +103,7 @@ if __name__ == '__main__':
     dims_1 = []
     dims_2 = []
     data_dir = './data/'
-    dataset_name = 'original_brats18'
+    dataset_name = 'original_brats17'
     for src_folder in ['LGG', 'HGG']:
         src_dir = data_dir + os.sep + dataset_name + os.sep + src_folder + os.sep
         folder_list = glob.glob(src_dir + '*')
