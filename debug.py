@@ -131,7 +131,8 @@ class UNetUpBlock(nn.Module):
 # output_3d = model(torch_fake_image_3d)
 
 import os
-
+import random
+import numpy as np
 # Obtain test images ID
 # Enter the root path
 cwd = os.getcwd()
@@ -178,8 +179,34 @@ print('The length of all images after removing training set is :', len(full_imag
 
 for imname in test37_file_names:
 	full_image_names_list.remove(imname)
-print()
+print('the length of all images after removing testing set is :', len(full_image_names_list))
 # for imname in test37_file_names:
 # 	full_image_names_list.remove(imname)
 # print('The length of full_image_names_list is ', len(full_image_names_list))
 
+# The new training list of 38 images
+np.random.seed(6)
+sz=38
+new_trainim_num = np.random.randint(1, 67, size=sz)
+new_trainim_num = np.unique(new_trainim_num)
+while len(new_trainim_num) < 38:
+	np.random.seed(6)
+	sz=sz+1
+	new_trainim_num = np.random.randint(1, 67, size=sz)
+	new_trainim_num = np.unique(new_trainim_num)
+new_trainim_num.astype(int)
+print('the length of new_trainim_num is ', len(new_trainim_num))
+print(new_trainim_num)
+new_train_list = []
+print(new_train_list)
+
+# The new testing list of 67 - 38 images
+new_test_list = full_image_names_list.copy()
+print('x',full_image_names_list[63])
+for new_train_list_item in new_trainim_num:
+	print('new_train_list_item: ', new_train_list_item)
+	new_train_list.append(full_image_names_list[new_train_list_item])
+	new_test_list.remove(full_image_names_list[new_train_list_item])
+
+print('th length of training image list is ', len(new_train_list))
+print()
