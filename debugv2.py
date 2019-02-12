@@ -134,6 +134,7 @@ import os
 import random
 import numpy as np
 import shutil
+import copy
 # Obtain test images ID
 # Enter the root path
 cwd = os.getcwd()
@@ -185,15 +186,18 @@ print('the length of all images after removing testing set is :', len(full_image
 # 	full_image_names_list.remove(imname)
 # print('The length of full_image_names_list is ', len(full_image_names_list))
 
-# The new training list of 38 images
+# The new training list of 58 images
 np.random.seed(6)
-sz=38
-new_trainim_num = np.random.randint(1, 67, size=sz)
+sz_train = 58
+sz_train_copy = copy.copy(sz_train)
+sz_rm = 210-106-37
+sz_test_copy = sz_rm - sz_train
+new_trainim_num = np.random.randint(1, sz_rm, size=sz_train)
 new_trainim_num = np.unique(new_trainim_num)
-while len(new_trainim_num) < 38:
+while len(new_trainim_num) < sz_train_copy:
 	np.random.seed(6)
-	sz=sz+1
-	new_trainim_num = np.random.randint(1, 67, size=sz)
+	sz_train=sz_train+1
+	new_trainim_num = np.random.randint(1, sz_rm, size=sz_train)
 	new_trainim_num = np.unique(new_trainim_num)
 new_trainim_num.astype(int)
 #print('the length of new_trainim_num is ', len(new_trainim_num))
@@ -201,7 +205,7 @@ new_trainim_num.astype(int)
 new_train_list = []
 #print(new_train_list)
 
-# The new testing list of 67 - 38 images
+
 new_test_list = full_image_names_list.copy()
 #print('x',full_image_names_list[63])
 for new_train_list_item in new_trainim_num:
@@ -214,45 +218,90 @@ print(new_train_list)
 print('the length of testing image list is ', len(new_test_list))
 print(new_test_list)
 
-if not os.path.exists('data/train_38_exp1'):
-	os.mkdir('data/train_38_exp1')
+# create training folder
+train_dir_str = 'data/train_'+str(sz_train_copy)+'_exp2'
+print(train_dir_str)
+if not os.path.exists(train_dir_str):
+	os.mkdir(train_dir_str)
 
-if not os.path.exists('data/test_29_exp1'):
-	os.mkdir('data/test_29_exp1')
+# create testing folder
+test_dir_str = 'data/test_'+str(sz_rm-sz_train_copy)+'_exp2'
+if not os.path.exists(test_dir_str):
+	os.mkdir(test_dir_str)
 
-# copy training list to the folder
+datafullhgg_path = '/home/donghao/Desktop/donghao/brain_segmentation/brain_data_full/HGG'
+# # copy training list to the folder
 for train_im in new_train_list:
-	srcpath = '/home/donghao/Desktop/donghao/brain_segmentation/brain_data_full/HGG' + os.sep + train_im
-	destpath = 'data/train_38_exp1/HGG' + os.sep + train_im
+	srcpath = datafullhgg_path + os.sep + train_im
+	destpath = train_dir_str + '/HGG' + os.sep + train_im
 	if not os.path.exists(destpath):
 		shutil.copytree(src=srcpath, dst=destpath)
-
-# copy testing list
+#
+# # copy testing list
 for test_im in new_test_list:
-	srcpath = '/home/donghao/Desktop/donghao/brain_segmentation/brain_data_full/HGG' + os.sep + test_im
-	destpath = 'data/test_29_exp1/HGG' + os.sep + test_im
+	srcpath = datafullhgg_path + os.sep + test_im
+	destpath = test_dir_str + '/HGG' + os.sep + test_im
 	if not os.path.exists(destpath):
 		shutil.copytree(src=srcpath, dst=destpath)
+# the task to do
+cmdstr = 'python preprocessing.py --data_dir ' + str(train_dir_str)
 
-# copy preprocessing file into the training folder
-srcpath = '/home/donghao/Desktop/donghao/isbi2019/code/3D-ESPNet/gen.py'
-dstpath = 'data/train_38_exp1_preprocess/gen.py'
+
+code_data_path = '/home/donghao/Desktop/donghao/isbi2019/code/3D-ESPNet'
+if not os.path.exists(code_data_path+'/'+train_dir_str+'_preprocess'):
+	print(cmdstr)
+	os.system(cmdstr)
+# # copy preprocessing file into the training folder
+
+srcpath = code_data_path + '/gen.py'
+dstpath = train_dir_str + '_preprocess/gen.py'
 shutil.copyfile(src=srcpath, dst=dstpath)
-
-# run gen.py inside the corresponding folder
-os.chdir('/home/donghao/Desktop/donghao/isbi2019/code/3D-ESPNet/data/train_38_exp1_preprocess')
+#
+# # run gen.py inside the corresponding folder
+gen_file_path = code_data_path + os.sep + train_dir_str + '_preprocess'
+os.chdir(gen_file_path)
 cwd = os.getcwd()
-print('The current path is ', cwd)
+
 os.system("python gen.py --run_type train.txt")
+# # the follwing line is to train the task
+train_flag = False
+if train_flag == True:
+	print('The current path is ', cwd)
+	os.chdir(code_data_path)
+	cmdstr = 'CUDA_VISIBLE_DEVICES=1 python main.py --data_dir "./data/train_58_exp2_preprocess" --data_dir_val "./data/train_58_exp2_preprocess" --max_epochs 150 --savedir ./results/train_58_exp2 --batch_size 3 --lr 5e-3'
+	os.system(cmdstr)
+#CUDA_VISIBLE_DEVICES=1 python main.py --data_dir "./data/train_58_exp2_preprocess" --data_dir_val "./data/train_58_exp2_preprocess" --max_epochs 150 --savedir ./results/train_58_exp2 --batch_size 3
+# copy train.txt from train data directory to train preprocess
+os.chdir(code_data_path)
+dstpath = code_data_path + os.sep + train_dir_str + '/train.txt'
+srcpath = code_data_path + os.sep + train_dir_str + '_preprocess/train.txt'
+shutil.copyfile(src=srcpath, dst=dstpath)
 
 # generate the testing dataset txt file
-os.chdir('/home/donghao/Desktop/donghao/isbi2019/code/3D-ESPNet')
-srcpath = '/home/donghao/Desktop/donghao/isbi2019/code/3D-ESPNet/gen_official.py'
-dstpath = 'data/test_29_exp1/gen_official.py'
+os.chdir(code_data_path)
+srcpath = code_data_path + '/gen_official.py'
+dstpath = test_dir_str + '/gen_official.py'
 shutil.copyfile(src=srcpath, dst=dstpath)
-os.chdir('/home/donghao/Desktop/donghao/isbi2019/code/3D-ESPNet/data/test_29_exp1')
+os.chdir(code_data_path + os.sep + test_dir_str)
 os.system("python gen_official.py")
-# enter the root path
+# # enter the root path
 os.chdir('/home/donghao/Desktop/donghao/isbi2019/code/3D-ESPNet')
-# os.system('python VisualizeResults.py --data_dir ./data/test_29_exp1/ --test_file test.txt --best_model_loc ./results/train_38_exp1/36_epoch_model.pth')
-os.system('python VisualizeResults.py --data_dir ./data/train_38_exp1/ --test_file train.txt --best_model_loc ./results/train_38_exp1/36_epoch_model.pth --outfile_dir ./results/train_38_exp1')
+# # os.system('python VisualizeResults.py --data_dir ./data/test_29_exp1/ --test_file test.txt --best_model_loc ./results/train_38_exp1/36_epoch_model.pth')
+train_dir_name = 'train_'+ str(sz_train_copy) + '_exp2'
+test_dir_name = 'test_'+ str(sz_test_copy) + '_exp2'
+cmdstr = 'python VisualizeResults.py ' + '--data_dir ' + './' + train_dir_str + ' --file_type train.txt' + ' --best_model_loc ' + './results/' + train_dir_name + '/148_epoch_model.pth' + ' --outfile_dir' + ' ./results/' + 'train_'+ str(sz_train_copy) + '_exp2'
+
+train_dir_predict_flag = False
+if train_dir_predict_flag == True:
+	print(cmdstr)
+	os.system(cmdstr)
+
+test_dir_predict_flag = True
+# cmdstr = 'CUDA_VISIBLE_DEVICES=0 python VisualizeResults.py ' + '--data_dir ' + './' + test_dir_str + ' --file_type test.txt' + ' --best_model_loc ' + './results/' + train_dir_name + '/200_epoch_model.pth' + ' --outfile_dir' + ' ./results/' + test_dir_name + 'epoch200'
+# cmdstr = 'CUDA_VISIBLE_DEVICES=0 python VisualizeResults.py ' + '--data_dir ' + './' + test_dir_str + ' --file_type test.txt' + ' --best_model_loc ' + './results/' + train_dir_name + '_v1' + '/150_epoch_model.pth' + ' --outfile_dir' + ' ./results/' + test_dir_name + '_epoch150'
+# cmdstr = 'CUDA_VISIBLE_DEVICES=0 python VisualizeResults.py ' + '--data_dir ' + './' + test_dir_str + ' --file_type test.txt' + ' --best_model_loc ' + './results/' + train_dir_name + '_v1' + '/100_epoch_model.pth' + ' --outfile_dir' + ' ./results/' + test_dir_name + '_epoch100'
+# cmdstr = 'CUDA_VISIBLE_DEVICES=0 python VisualizeResults.py ' + '--data_dir ' + './' + test_dir_str + ' --file_type test.txt' + ' --best_model_loc ' + './results/' + train_dir_name + '_v1' + '/50_epoch_model.pth' + ' --outfile_dir' + ' ./results/' + test_dir_name + '_epoch50'
+cmdstr = 'CUDA_VISIBLE_DEVICES=0 python VisualizeResults.py ' + '--data_dir ' + './' + test_dir_str + ' --file_type test.txt' + ' --best_model_loc ' + './results/' + train_dir_name + '_v1' + '/best_model.pth' + ' --outfile_dir' + ' ./results/' + test_dir_name + '_best_v1'
+if test_dir_predict_flag == True:
+	os.system(cmdstr)
+# os.system('python VisualizeResults.py --data_dir ./data/train_38_exp1/ --test_file train.txt --best_model_loc ./results/train_38_exp1/36_epoch_model.pth --outfile_dir ./results/train_38_exp1')

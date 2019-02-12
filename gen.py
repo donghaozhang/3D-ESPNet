@@ -8,9 +8,14 @@ This file generates a mapping between FLAIR file and segmentation file
 '''
 import glob
 import os
+from argparse import ArgumentParser
+
+parser = ArgumentParser()
+parser.add_argument('--run_type', default='train.txt', help='train.txt or val.txt')
+args = parser.parse_args()
 
 folders = ['HGG', 'LGG']
-writeText = open('val.txt', 'w')
+writeText = open(args.run_type, 'w')
 for folder in folders:
     sub_folders = glob.glob(folder + os.sep + '*')
     for sub_folder in sub_folders:
