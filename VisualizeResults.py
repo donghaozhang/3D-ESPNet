@@ -14,6 +14,7 @@ import nibabel as nib
 from utils import cropVolume
 import Model as Net
 import os
+from argparse import ArgumentParser
 
 def norm(im):
     '''
@@ -54,7 +55,7 @@ def cropVolumes(img1, img2, img3, img4):
     return wi_st, wi_en, hi_st, hi_en, ch_st, ch_en
 
 
-def segmentVoxel(imgLoc, model):
+def segmentVoxel(imgLoc, model, out_dir):
     '''
     Segment the image and store the results
     :param imgLoc: location of the flair image. Other modalities locations can be computed using this one.
@@ -131,21 +132,37 @@ def segmentVoxel(imgLoc, model):
     img1 = nib.load(imgLoc)
     img1_new = nib.Nifti1Image(output_numpy, img1.affine, img1.header)
     name = imgLoc.replace('_flair', '').split('/')[-1]
-    out_dir = './predictions_best_new'
+    #out_dir = './predictions_best_new'
     if not os.path.isdir(out_dir):
         os.mkdir(out_dir)
     file_name = out_dir + os.sep + name
+    print('the current file name is ', file_name)
     nib.save(img1_new, file_name)
 
 if __name__ == '__main__':
-    data_dir = './data/original_brats17/' # evaluate on original data and not the processed one
-    test_file = 'val.txt'
+    parser = ArgumentParser()
+    parser.add_argument('--data_dir', default="./data/test_29_exp1/") # evaluate on original data and not the processed one
+    parser.add_argument('--file_type', default='test.txt')
+    parser.add_argument('--best_model_loc', default='./results/train_38_exp1/36_epoch_model.pth')
+    parser.add_argument('--outfile_dir', default='./results/test_29_exp1_prediction')
+    args = parser.parse_args()
+    data_dir = args.data_dir
+    test_file = args.file_type
+    best_model_loc = args.best_model_loc
+    outfile_dir = args.outfile_dir
+    #data_dir = './data/test_brats17/'
+    #test_file = 'val.txt'
+    #best_model_loc = './results/sepv2/best_model.pth'
     if not os.path.isfile(data_dir + os.sep + test_file):
-        print('Validation file not found')
+        debugpath = data_dir + os.sep + test_file
+        print('Test file not found', debugpath)
         exit(-1)
 
-    best_model_loc = './results/sepv2/best_model.pth'
+
     if not os.path.isfile(best_model_loc):
+        print('debug', best_model_loc)
+        cwd = os.getcwd()
+        print('The current path is ', cwd)
         print('Pretrained weight file does not exist. Please check')
         exit(-1)
 
@@ -157,8 +174,8 @@ if __name__ == '__main__':
     dice_scores_wt = []
     dice_scores_cm = []
     dice_scores_et = []
-    with open(data_dir + test_file) as txtFile:
+    with open(data_dir + os.sep + test_file) as txtFile:
         for line in txtFile:
             line_arr = line.split(',')
             img_file = ((data_dir).strip() + '/' + line_arr[0].strip()).strip()
-            segmentVoxel(img_file, model)
+            segmentVoxel(imgLoc=img_file, model=model, out_dir=outfile_dir)

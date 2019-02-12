@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=1 python main.py --data_dir "./data/train_38_exp1_preprocess" --data_dir_val "./data/train_38_exp1_preprocess" --max_epochs 1 --savedir ./results/train_38_exp1 --batch_size 3

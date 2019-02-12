@@ -8,7 +8,7 @@ import nibabel as nib
 import glob
 import os
 from utils import cropVolume
-
+from argparse import ArgumentParser
 
 
 def cropVolumes(img1, img2, img3, img4):
@@ -102,10 +102,17 @@ if __name__ == '__main__':
     dims_0 = []
     dims_1 = []
     dims_2 = []
-    data_dir = './data/'
-    dataset_name = 'original_brats17'
+    data_dir = './data'
+    parser = ArgumentParser()
+    parser.add_argument('--data_dir', default=".original_brats17",
+                        help='data directory for training set')
+    args = parser.parse_args()
+    dataset_name = args.data_dir
+    print('it has been called')
+    # dataset_name = 'original_brats17'
     for src_folder in ['LGG', 'HGG']:
-        src_dir = data_dir + os.sep + dataset_name + os.sep + src_folder + os.sep
+        src_dir = dataset_name + os.sep + src_folder + os.sep
+        print(src_dir)
         folder_list = glob.glob(src_dir + '*')
         for folder in folder_list:
             files = glob.glob(folder + '/*_flair.nii.gz')
